@@ -1,5 +1,6 @@
 import { analyzeJourney } from "../../services/disruptions";
 import { escapeHtml } from "../../lib/format";
+import { t } from "../../i18n";
 import type { Journey } from "../../types";
 
 export function renderDisruptionStrip(container: HTMLElement, journey: Journey): void {
@@ -15,7 +16,7 @@ export function renderDisruptionStrip(container: HTMLElement, journey: Journey):
   const text =
     lines.length > 0
       ? lines.join(" · ")
-      : "Verspätungen auf der Strecke — Zeitpuffer einplanen.";
+      : t("disruption.delaysRoute");
 
   container.classList.remove("hidden");
   container.className = "disruption-strip";

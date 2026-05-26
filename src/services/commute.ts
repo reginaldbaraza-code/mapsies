@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import type { Journey, JourneyInsights, TransferInsight, TransferRisk, WalkPace } from "../types";
 
 const TRANSFER_BUFFER_SEC = 120;
@@ -34,11 +35,31 @@ function platformFromLeg(leg: Journey["legs"][0], kind: "dep" | "arr"): string |
   const p = kind === "dep" ? leg.departurePlatform : leg.arrivalPlatform;
   if (p) return p;
   for (const r of leg.remarks ?? []) {
-    const t = (r.summary ?? r.text ?? "").toLowerCase();
-    const m = t.match(/gleis\s*(\d+[a-z]?)/i) ?? t.match(/platform\s*(\d+[a-z]?)/i);
+    const text = (r.summary ?? r.text ?? "").toLowerCase();
+    const m = text.match(/gleis\s*(\d+[a-z]?)/i) ?? text.match(/platform\s*(\d+[a-z]?)/i);
     if (m) return m[1];
   }
   return undefined;
+}
+
+function buildTransferMessage(
+  risk: TransferRisk,
+  station: string,
+  availMin: number,
+  walkMin: number,
+  platformFrom?: string,
+  platformTo?: string
+): string {
+  const params = { station, avail: availMin, walk: walkMin };
+  let message: string;
+  if (risk === "missed") message = t("transfer.missed", params);
+  else if (risk === "tight") message = t("transfer.tight", params);
+  else message = t("transfer.ok", params);
+
+  if (platformFrom && platformTo && platformFrom !== platformTo) {
+    message += t("transfer.platform", { from: platformFrom, to: platformTo });
+  }
+  return message;
 }
 
 export function analyzeTransfers(journey: Journey, pace: WalkPace = "normal"): TransferInsight[] {
@@ -48,7 +69,7 @@ export function analyzeTransfers(journey: Journey, pace: WalkPace = "normal"): T
   for (let i = 0; i < legs.length - 1; i++) {
     const cur = legs[i];
     const next = legs[i + 1];
-    const station = cur.destination?.name ?? next.origin?.name ?? "Umstieg";
+    const station = cur.destination?.name ?? next.origin?.name ?? t("transfer.stationDefault");
 
     const arrMs =
       new Date(cur.arrival).getTime() + (cur.arrivalDelay ?? 0) * 1000;
@@ -75,18 +96,14 @@ export function analyzeTransfers(journey: Journey, pace: WalkPace = "normal"): T
     if (availableSeconds < walkSeconds) risk = "missed";
     else if (availableSeconds < walkSeconds + TRANSFER_BUFFER_SEC) risk = "tight";
 
-    let message: string;
-    if (risk === "missed") {
-      message = `Umstieg in ${station}: ${Math.round(availableSeconds / 60)} Min. — zu knapp (ca. ${Math.round(walkSeconds / 60)} Min. Fußweg nötig).`;
-    } else if (risk === "tight") {
-      message = `Umstieg in ${station}: knapp — ${Math.round(availableSeconds / 60)} Min., Fußweg ~${Math.round(walkSeconds / 60)} Min.`;
-    } else {
-      message = `Umstieg in ${station}: ${Math.round(availableSeconds / 60)} Min. Puffer.`;
-    }
-
-    if (platformChanged) {
-      message += ` Gleiswechsel ${platformFrom} → ${platformTo}.`;
-    }
+    const message = buildTransferMessage(
+      risk,
+      station,
+      Math.round(availableSeconds / 60),
+      Math.round(walkSeconds / 60),
+      platformFrom,
+      platformTo
+    );
 
     out.push({
       index: out.length,
@@ -106,18 +123,18 @@ export function analyzeTransfers(journey: Journey, pace: WalkPace = "normal"): T
 
 export function scoreReliability(journey: Journey, transfers: TransferInsight[]): number {
   let score = 100;
-  for (const t of transfers) {
-    if (t.risk === "missed") score -= 35;
-    else if (t.risk === "tight") score -= 12;
-    if (t.platformChanged) score -= 4;
+  for (const tr of transfers) {
+    if (tr.risk === "missed") score -= 35;
+    else if (tr.risk === "tight") score -= 12;
+    if (tr.platformChanged) score -= 4;
   }
   for (const leg of journey.legs) {
     const d = Math.max(leg.departureDelay ?? 0, leg.arrivalDelay ?? 0);
     if (d > 300) score -= 8;
     else if (d > 60) score -= 3;
     for (const r of leg.remarks ?? []) {
-      const t = (r.summary ?? r.text ?? "").toLowerCase();
-      if (t.includes("ausfall") || t.includes("cancel")) score -= 25;
+      const text = (r.summary ?? r.text ?? "").toLowerCase();
+      if (text.includes("ausfall") || text.includes("cancel")) score -= 25;
     }
   }
   return Math.max(0, Math.min(100, score));
@@ -130,8 +147,8 @@ export function estimateDelayProbability(journey: Journey): number {
     p += Math.min(25, Math.round(d / 60) * 4);
     p += (leg.remarks?.length ?? 0) * 3;
     for (const r of leg.remarks ?? []) {
-      const t = (r.summary ?? r.text ?? "").toLowerCase();
-      if (t.includes("ausfall")) p += 30;
+      const text = (r.summary ?? r.text ?? "").toLowerCase();
+      if (text.includes("ausfall")) p += 30;
     }
   }
   return Math.min(95, p);
@@ -159,24 +176,30 @@ export function analyzeJourneyInsights(
   const reliabilityScore = scoreReliability(journey, transfers);
   const delayProbability = estimateDelayProbability(journey);
 
-  const missedWarnings = transfers.filter((t) => t.risk === "missed").map((t) => t.message);
+  const missedWarnings = transfers.filter((tr) => tr.risk === "missed").map((tr) => tr.message);
   const platformAlerts = transfers
-    .filter((t) => t.platformChanged)
-    .map((t) => `Gleiswechsel ${t.station}: ${t.platformFrom} → ${t.platformTo}`);
+    .filter((tr) => tr.platformChanged)
+    .map((tr) =>
+      t("insights.platformAlert", {
+        station: tr.station,
+        from: tr.platformFrom ?? "",
+        to: tr.platformTo ?? "",
+      })
+    );
 
   const canMakeNow = canMakeFirstLeg(journey, pace);
   let makeConnectionHint: string | null = null;
   if (canMakeNow === false) {
-    makeConnectionHint = "Erste Verbindung verpasst — spätere Alternative wählen oder Abfahrt anpassen.";
-  } else if (canMakeNow === true && transfers.some((t) => t.risk === "tight")) {
-    makeConnectionHint = "Du schaffst den Start — mindestens ein Umstieg ist knapp.";
+    makeConnectionHint = t("insights.missedFirst");
+  } else if (canMakeNow === true && transfers.some((tr) => tr.risk === "tight")) {
+    makeConnectionHint = t("insights.tightTransfer");
   } else if (canMakeNow === true) {
-    makeConnectionHint = "Du schaffst die erste Abfahrt.";
+    makeConnectionHint = t("insights.makeFirst");
   }
 
   let overallTransferRisk: JourneyInsights["overallTransferRisk"] = "low";
-  if (transfers.some((t) => t.risk === "missed")) overallTransferRisk = "high";
-  else if (transfers.some((t) => t.risk === "tight")) overallTransferRisk = "medium";
+  if (transfers.some((tr) => tr.risk === "missed")) overallTransferRisk = "high";
+  else if (transfers.some((tr) => tr.risk === "tight")) overallTransferRisk = "medium";
 
   return {
     transfers,
@@ -210,8 +233,8 @@ export function rankJourneys(journeys: Journey[], pace: WalkPace = "normal"): Jo
 }
 
 export function reliabilityLabel(score: number): string {
-  if (score >= 85) return "Sehr zuverlässig";
-  if (score >= 70) return "Zuverlässig";
-  if (score >= 50) return "Unsicher";
-  return "Riskant";
+  if (score >= 85) return t("reliability.veryHigh");
+  if (score >= 70) return t("reliability.high");
+  if (score >= 50) return t("reliability.uncertain");
+  return t("reliability.risky");
 }
