@@ -1,5 +1,6 @@
 import { analyzeJourneyInsights } from "../services/commute";
 import { formatTime, countTransfers } from "../lib/format";
+import { t } from "../i18n";
 import type { Journey, JourneyInsights, WalkPace } from "../types";
 
 export type DecisionUiState =
@@ -34,6 +35,12 @@ function isNightTravel(): boolean {
   return h >= 22 || h < 5;
 }
 
+function transferCountLabel(transfers: number): string {
+  if (transfers === 0) return t("common.direct");
+  const key = transfers > 1 ? "common.transfers" : "common.transfer";
+  return `${transfers} ${t(key)}`;
+}
+
 export function resolveDecisionUiState(
   journey: Journey,
   insights: JourneyInsights
@@ -57,7 +64,7 @@ export function buildDecisionPresentation(
   const state = resolveDecisionUiState(journey, insights);
   const leg = firstTransitLeg(journey);
   const mins = minutesUntilFirstTransit(journey);
-  const line = leg?.line?.name ?? "Verbindung";
+  const line = leg?.line?.name ?? t("common.connection");
   const platform = leg?.departurePlatform;
   const depTime = leg ? formatTime(leg.departure) : "—";
   const transfers = countTransfers(journey.legs);
@@ -67,45 +74,44 @@ export function buildDecisionPresentation(
 
   switch (state) {
     case "late":
-      action = "Nächste Verbindung wählen";
-      actionSub = "Abfahrt verpasst";
+      action = t("decision.late.action");
+      actionSub = t("decision.late.sub");
       break;
     case "urgent-leave":
-      action = mins <= 3 ? "Jetzt los" : `In ${mins} Min. los`;
-      actionSub = line ? `${line} nehmen` : `Los um ${depTime}`;
-      if (platform) actionSub += ` · Gleis ${platform}`;
+      action = mins <= 3 ? t("decision.urgent.now") : t("decision.urgent.in", { mins });
+      actionSub = line ? t("decision.takeLineSub", { line }) : t("decision.leaveAt", { time: depTime });
+      if (platform) actionSub += t("decision.platformSuffix", { platform });
       break;
     case "missed-risk":
-      action = "Beim Umsteigen aufpassen";
+      action = t("decision.missed.action");
       actionSub =
-        insights.transfers.find((t) => t.risk !== "ok")?.station ??
-        `${transfers} Umstieg${transfers > 1 ? "e" : ""}`;
+        insights.transfers.find((tr) => tr.risk !== "ok")?.station ?? transferCountLabel(transfers);
       break;
     case "low-reliability":
-      action = "Schnellste Route nehmen";
-      actionSub = "Mit Verspätung rechnen";
+      action = t("decision.low.action");
+      actionSub = t("decision.low.sub");
       break;
     case "night":
-      action = mins <= 15 ? `In ${mins} Min. los` : `Um ${depTime} los`;
-      actionSub = line ? `${line} nehmen · Nacht` : "Nachtverkehr";
+      action =
+        mins <= 15 ? t("decision.urgent.in", { mins }) : t("decision.leaveAtNight", { time: depTime });
+      actionSub = line ? t("decision.night.line", { line }) : t("decision.night.service");
       break;
     default:
       if (insights.canMakeNow === false && mins > 0) {
-        action = "Zum Gleis gehen";
-        actionSub = `${mins} Min. bis ${depTime}`;
+        action = t("decision.rush.platform");
+        actionSub = t("decision.rush.until", { mins, time: depTime });
       } else {
-        action = line ? `${line} nehmen` : `Um ${depTime} los`;
-        actionSub =
-          transfers === 0 ? "Direkt" : `${transfers} Umstieg${transfers > 1 ? "e" : ""}`;
+        action = line ? t("decision.takeLine", { line }) : t("decision.leaveAt", { time: depTime });
+        actionSub = transferCountLabel(transfers);
       }
       break;
   }
 
   const successProbability = insights.reliabilityScore;
-  let probabilityLabel = "Wahrscheinlichkeit, dass du ankommst";
-  if (state === "late") probabilityLabel = "Diese Verbindung nicht mehr nutzbar";
-  else if (state === "missed-risk") probabilityLabel = "Umstiegsrisiko erhöht";
-  else if (state === "low-reliability") probabilityLabel = "Mit Verzögerungen rechnen";
+  let probabilityLabel = t("decision.prob.default");
+  if (state === "late") probabilityLabel = t("decision.late.prob");
+  else if (state === "missed-risk") probabilityLabel = t("decision.prob.missed");
+  else if (state === "low-reliability") probabilityLabel = t("decision.low.prob");
 
   return { state, action, actionSub, successProbability, probabilityLabel };
 }

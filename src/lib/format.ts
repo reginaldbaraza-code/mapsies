@@ -1,11 +1,22 @@
-import { PRODUCT_LABELS } from "../config";
+import { t, timeLocale } from "../i18n";
 import type { Journey, JourneyLeg } from "../types";
 
+const PRODUCT_KEYS: Record<string, keyof typeof import("../i18n/de").de> = {
+  subway: "product.subway",
+  suburban: "product.suburban",
+  bus: "product.bus",
+  tram: "product.tram",
+  regional: "product.regional",
+  regionalExpress: "product.regionalExpress",
+  ferry: "product.ferry",
+};
+
 export function formatDuration(seconds: number): string {
-  const t = Math.round(seconds);
-  const h = Math.floor(t / 3600);
-  const m = Math.floor((t % 3600) / 60);
-  return h > 0 ? `${h}h ${m}m` : `${m} min`;
+  const tSec = Math.round(seconds);
+  const h = Math.floor(tSec / 3600);
+  const m = Math.floor((tSec % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m} ${t("common.min")}`;
 }
 
 export function formatDistance(m: number): string {
@@ -13,7 +24,7 @@ export function formatDistance(m: number): string {
 }
 
 export function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" });
+  return new Date(iso).toLocaleTimeString(timeLocale(), { hour: "2-digit", minute: "2-digit" });
 }
 
 export function formatDateTimeLocal(date: Date): string {
@@ -33,9 +44,10 @@ export function countTransfers(legs: JourneyLeg[]): number {
 
 export function formatLeg(leg: JourneyLeg): string {
   if (leg.mode === "walking" || (!leg.line && leg.walking)) {
-    return `Zu Fuß · ${leg.origin.name}`;
+    return t("leg.walk", { name: leg.origin.name });
   }
-  const product = PRODUCT_LABELS[leg.line?.product ?? ""] ?? "";
+  const key = PRODUCT_KEYS[leg.line?.product ?? ""];
+  const product = key ? t(key) : "";
   const line = leg.line?.name ?? "";
   const dir = leg.direction ? ` → ${leg.direction}` : "";
   return `${product} ${line}${dir}`.trim();

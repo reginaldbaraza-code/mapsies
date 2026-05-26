@@ -1,3 +1,4 @@
+import { t } from "../i18n";
 import { loadShortcut, HOME_KEY_EXPORT, WORK_KEY_EXPORT } from "./storage";
 import type { Place } from "../types";
 
@@ -18,7 +19,7 @@ export function getMorningSuggestion(): MorningSuggestion | null {
   return {
     origin: home,
     destination: work,
-    label: "Morgenpendel: Home → Work",
+    label: t("morning.label"),
   };
 }
 

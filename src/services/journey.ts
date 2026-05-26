@@ -1,4 +1,5 @@
 import { API } from "../config";
+import { t, getLocale } from "../i18n";
 import { fetchJson, TransitError } from "../lib/http";
 import { isInBerlin } from "../lib/stop-ids";
 import { journeyDurationSeconds } from "../lib/format";
@@ -22,7 +23,7 @@ async function fetchJourneysFrom(apiBase: string, origin: Place, dest: Place, de
     "polylines=true",
     "stopovers=true",
     "results=5",
-    "language=de",
+    `language=${getLocale()}`,
     "remarks=true",
   ].join("&");
 
@@ -65,10 +66,10 @@ export async function fetchFastestJourneys(
   }
 
   if (last503) {
-    throw new Error("Routing-Server überlastet (503). In 30–60 Sekunden erneut versuchen.");
+    throw new Error(t("error.routing503"));
   }
   if (locationErrors > 0) {
-    throw new Error("Haltestelle nicht erkannt. Bitte einen Vorschlag aus der Liste wählen.");
+    throw new Error(t("error.locationNotFound"));
   }
-  throw new Error("Keine Deutschlandticket-Verbindung gefunden. Anderes Datum oder Hauptbahnhof versuchen.");
+  throw new Error(t("error.noConnection"));
 }
