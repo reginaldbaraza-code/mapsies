@@ -1,0 +1,393 @@
+/* FastRoute Brand — Route Spine + Rail Glide */
+
+/* ─── Route Spine (visual signature) ─── */
+.route-spine {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.route-spine__track {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spine-gap);
+  min-height: 120px;
+}
+
+.route-spine__segment {
+  width: var(--spine-w);
+  border-radius: 99px;
+  flex: 1;
+  min-height: 28px;
+  transform-origin: top center;
+}
+
+.route-spine--primary .route-spine__segment--transit {
+  background: var(--fr-green-spine);
+  box-shadow: 0 0 12px var(--fr-green-glow), 0 0 24px var(--fr-green-soft);
+}
+
+.route-spine--risk .route-spine__segment--transit {
+  background: var(--fr-amber);
+  box-shadow: 0 0 8px var(--fr-amber-soft);
+}
+
+.route-spine--subdued .route-spine__segment {
+  width: var(--spine-w-subdued);
+  min-height: 20px;
+  box-shadow: none;
+}
+
+.route-spine--subdued .route-spine__segment--transit {
+  background: var(--fr-border);
+}
+
+.route-spine__segment--walk {
+  background: var(--fr-text-muted);
+  opacity: 0.35;
+  min-height: 16px;
+}
+
+.route-spine__break {
+  width: var(--spine-w);
+  height: var(--spine-gap);
+  opacity: 0;
+}
+
+.route-spine__break--warn {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fr-amber);
+  opacity: 1;
+  box-shadow: 0 0 6px var(--fr-amber-soft);
+}
+
+.route-spine__break--fail {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fr-red);
+  opacity: 1;
+}
+
+.route-spine__times {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s2);
+  margin-top: var(--s3);
+}
+
+.route-spine__times-sep {
+  font: var(--type-micro);
+  color: var(--fr-text-muted);
+}
+
+/* Rail Glide — spine draw */
+.route-spine--draw .route-spine__segment {
+  animation: spine-draw var(--dur-rail) var(--ease-rail) backwards;
+}
+
+.route-spine--draw .route-spine__segment:nth-child(1) { animation-delay: 0ms; }
+.route-spine--draw .route-spine__segment:nth-child(2) { animation-delay: 40ms; }
+.route-spine--draw .route-spine__segment:nth-child(3) { animation-delay: 80ms; }
+.route-spine--draw .route-spine__segment:nth-child(4) { animation-delay: 120ms; }
+.route-spine--draw .route-spine__segment:nth-child(5) { animation-delay: 160ms; }
+
+.route-spine--draw .route-spine__break {
+  animation: spine-break-in var(--dur-rail-fast) var(--ease-rail) backwards;
+}
+
+@keyframes spine-draw {
+  from {
+    transform: scaleY(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes spine-break-in {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.route-spine--skeleton .route-spine__segment {
+  background: var(--fr-border);
+  box-shadow: none;
+  animation: spine-shimmer 1s var(--ease-rail) infinite;
+}
+
+@keyframes spine-shimmer {
+  50% { opacity: 0.4; }
+}
+
+/* ─── Time dominance ─── */
+.time-dominant {
+  font: var(--type-time-sm);
+  font-variant-numeric: var(--type-tabular);
+  letter-spacing: -0.03em;
+  color: var(--fr-text);
+}
+
+.time-dominant--md {
+  font: var(--type-time-md);
+}
+
+.time-dominant--sm {
+  font: var(--type-time-sm);
+  font-size: 1.125rem;
+}
+
+.time-dominant--duration {
+  font: var(--type-time);
+  color: var(--fr-green);
+}
+
+.time-dominant--end {
+  font-size: 1.25rem;
+  color: var(--fr-text-muted);
+}
+
+.time-dominant--prob {
+  font: var(--type-time-md);
+  color: var(--fr-green);
+}
+
+/* ─── RouteDecisionCore + spine layout ─── */
+.route-decision-core__layout {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: var(--s4);
+  align-items: stretch;
+}
+
+.route-decision-core {
+  background: var(--fr-surface);
+  border: 1px solid var(--fr-border);
+  border-radius: 20px;
+  padding: var(--s4);
+  animation: core-rail-in var(--dur-rail) var(--ease-rail);
+}
+
+@keyframes core-rail-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.route-decision-core__action {
+  margin: var(--s2) 0 0;
+  font: var(--type-title);
+  letter-spacing: -0.02em;
+}
+
+.route-decision-core__action-sub {
+  margin: var(--s1) 0 0;
+  font: var(--type-caption);
+  color: var(--fr-text-muted);
+}
+
+.route-decision-core__times-block {
+  margin-top: var(--s4);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--fr-border);
+}
+
+.route-decision-core__times-range {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+  margin-top: var(--s2);
+  font: var(--type-caption);
+  color: var(--fr-text-muted);
+}
+
+.route-decision-core__probability {
+  margin-top: var(--s4);
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+}
+
+.route-decision-core__prob-label {
+  font: var(--type-caption);
+  color: var(--fr-text-muted);
+  flex: 1;
+}
+
+.route-decision-core__detail {
+  margin-top: var(--s4);
+  width: 100%;
+  padding: var(--s3);
+  border: 1px solid var(--fr-border);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--fr-green);
+  font: var(--type-caption);
+  cursor: pointer;
+  transition: background var(--dur-rail-fast) var(--ease-rail);
+}
+
+.route-decision-core__detail:active {
+  background: var(--fr-green-soft);
+}
+
+/* DepartureTimer */
+.departure-timer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s1);
+}
+
+.departure-timer__meta {
+  font: var(--type-caption);
+  color: var(--fr-text-muted);
+}
+
+.departure-timer--urgent .time-dominant {
+  color: var(--fr-green);
+}
+
+.departure-timer--late .time-dominant {
+  color: var(--fr-red);
+}
+
+/* State layouts */
+.state-urgent-leave .route-decision-core__action {
+  font-size: 1.375rem;
+}
+
+.state-late .route-decision-core__probability,
+.state-late .route-decision-core__times-block {
+  display: none;
+}
+
+.state-missed-risk .route-spine--risk .route-spine__segment--transit {
+  background: linear-gradient(180deg, var(--fr-amber) 0%, var(--fr-green) 100%);
+}
+
+/* Transfer timeline */
+.transfer-timeline {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: var(--s4);
+  align-items: start;
+}
+
+.transfer-timeline__spine-col .route-spine__track {
+  min-height: 200px;
+}
+
+.timeline-step {
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--fr-border);
+}
+
+.timeline-step__verb {
+  margin: var(--s1) 0 0;
+  font: var(--type-title);
+  font-size: 1rem;
+}
+
+.timeline-step__meta {
+  margin: var(--s1) 0 0;
+  font: var(--type-caption);
+  color: var(--fr-text-muted);
+}
+
+.timeline-transfer {
+  font: var(--type-caption);
+  color: var(--fr-text-muted);
+  padding: var(--s2) 0 var(--s3);
+  border-left: 2px solid var(--fr-border);
+  padding-left: var(--s3);
+  margin-left: var(--s1);
+}
+
+.timeline-transfer--tight {
+  color: var(--fr-amber);
+  border-left-color: var(--fr-amber);
+}
+
+.timeline-transfer--missed {
+  color: var(--fr-red);
+  border-left-color: var(--fr-red);
+}
+
+/* Subdued alts + spine */
+.alt-subdued {
+  display: grid;
+  grid-template-columns: 32px 1fr;
+  gap: var(--s3);
+  align-items: center;
+  width: 100%;
+  padding: var(--s3) 0;
+  border: none;
+  border-bottom: 1px solid var(--fr-border);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  opacity: 0.65;
+  transition: opacity var(--dur-rail-fast) var(--ease-rail);
+}
+
+.alt-subdued:active {
+  opacity: 1;
+}
+
+.alt-subdued__spine .route-spine__track {
+  min-height: 48px;
+}
+
+.alt-subdued__meta {
+  display: block;
+  font: var(--type-caption);
+  color: var(--fr-text-muted);
+  margin-top: var(--s1);
+}
+
+/* Brand masthead */
+.masthead__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+}
+
+.masthead__spine-mark {
+  width: 4px;
+  height: 32px;
+  border-radius: 99px;
+  background: var(--fr-green-spine);
+  box-shadow: 0 0 10px var(--fr-green-glow);
+  flex-shrink: 0;
+}
+
+/* Disruption strip — secondary, amber only when needed */
+.disruption-strip {
+  font: var(--type-caption);
+  color: var(--fr-text-muted);
+  padding: var(--s2) var(--s3);
+  margin-bottom: var(--s3);
+  border-left: 2px solid var(--fr-amber);
+  background: var(--fr-amber-soft);
+}
+
+/* CTA brand */
+.cta-primary {
+  background: var(--fr-green);
+  transition: transform var(--dur-rail-fast) var(--ease-rail), filter var(--dur-rail-fast);
+}
+
+/* Secondary reveal — Rail Glide */
+.decision-secondary {
+  transition:
+    opacity var(--dur-rail) var(--ease-rail),
+    transform var(--dur-rail) var(--ease-rail);
+}

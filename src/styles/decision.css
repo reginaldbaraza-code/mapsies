@@ -1,0 +1,100 @@
+/* Decision screen hierarchy — component visuals in brand.css */
+
+.screen--results {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.decision-primary {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: min(52vh, 420px);
+  z-index: 2;
+}
+
+.decision-secondary {
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.decision-secondary--pending {
+  pointer-events: none;
+}
+
+.decision-secondary--visible {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.route-decision-core.is-skeleton {
+  pointer-events: none;
+  min-height: 280px;
+}
+
+.route-decision-core__skeleton-line {
+  height: 24px;
+  border-radius: 6px;
+  background: var(--fr-border);
+  margin-top: var(--s3);
+}
+
+.route-decision-core__loading-copy {
+  margin: var(--s3) 0 0;
+  font: var(--type-caption);
+  color: var(--fr-text-muted);
+}
+
+.alt-subdued__label {
+  font: var(--type-micro);
+  color: var(--fr-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 var(--s2);
+}
+
+.detail-cta--secondary {
+  margin-top: var(--s3);
+  width: 100%;
+  padding: var(--s2) 0;
+  border: none;
+  background: none;
+  color: var(--fr-text-muted);
+  font: var(--type-caption);
+  cursor: pointer;
+  text-align: left;
+}
+
+.map-layer {
+  opacity: 0 !important;
+  transition: opacity var(--dur-rail) var(--ease-rail);
+}
+
+.map-layer.is-expanded {
+  opacity: 0.2 !important;
+}
+
+.map-reveal {
+  margin-top: var(--s3);
+  padding: var(--s2) 0;
+  border: none;
+  background: none;
+  color: var(--fr-text-muted);
+  font: var(--type-micro);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+}
+
+.map-reveal:active {
+  color: var(--fr-green);
+}
+
+.route-hero,
+.alt-routes .alt-route {
+  display: none !important;
+}

@@ -1,0 +1,66 @@
+/**
+ * FastRoute Brand Layer v1.4
+ * Calm, authoritative decision engine for Deutschlandticket travel.
+ */
+
+:root {
+  /* Typography — Inter only */
+  --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --type-time: 600 clamp(2.5rem, 12vw, 3.5rem) / 1 var(--font);
+  --type-time-md: 600 1.75rem/1 var(--font);
+  --type-time-sm: 600 1.125rem/1.1 var(--font);
+  --type-hero: 600 1.5rem/1.15 var(--font);
+  --type-title: 600 1.125rem/1.2 var(--font);
+  --type-body: 400 0.9375rem/1.45 var(--font);
+  --type-caption: 500 0.75rem/1.35 var(--font);
+  --type-micro: 600 0.625rem/1.2 var(--font);
+  --type-tabular: tabular-nums;
+
+  /* Semantic color — meaning, not decoration */
+  --fr-bg: #05070a;
+  --fr-bg-veil: rgba(5, 7, 10, 0.94);
+  --fr-surface: #0a0e14;
+  --fr-surface-raised: #111820;
+  --fr-border: rgba(255, 255, 255, 0.07);
+  --fr-text: #f4f5f7;
+  --fr-text-muted: #7a8494;
+
+  /* Accent green — recommended spine + success ONLY */
+  --fr-green: #00e87a;
+  --fr-green-soft: rgba(0, 232, 122, 0.12);
+  --fr-green-glow: rgba(0, 232, 122, 0.45);
+  --fr-green-spine: linear-gradient(180deg, #00e87a 0%, #00b35f 100%);
+
+  /* Amber — transfer risk / attention */
+  --fr-amber: #e8a838;
+  --fr-amber-soft: rgba(232, 168, 56, 0.14);
+
+  /* Red — rare failure */
+  --fr-red: #e85d5d;
+  --fr-red-soft: rgba(232, 93, 93, 0.12);
+
+  /* Aliases (legacy tokens → brand) */
+  --bg: var(--fr-bg);
+  --bg-veil: var(--fr-bg-veil);
+  --surface: var(--fr-surface);
+  --surface-raised: var(--fr-surface-raised);
+  --border: var(--fr-border);
+  --text: var(--fr-text);
+  --text-secondary: var(--fr-text-muted);
+  --accent: var(--fr-green);
+  --accent-soft: var(--fr-green-soft);
+  --accent-strong: var(--fr-green-glow);
+
+  /* Rail Glide motion */
+  --ease-rail: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-rail: 320ms;
+  --dur-rail-fast: 180ms;
+  --ease-out: var(--ease-rail);
+  --dur-med: var(--dur-rail);
+  --dur-fast: var(--dur-rail-fast);
+
+  /* Route Spine geometry */
+  --spine-w: 4px;
+  --spine-w-subdued: 2px;
+  --spine-gap: 10px;
+}
