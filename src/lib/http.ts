@@ -50,7 +50,17 @@ export async function fetchJson<T>(url: string, opts?: { cache?: boolean; retrie
             throw new TransitError(text || `HTTP ${res.status}`);
           }
         }
-        const data = (await res.json()) as T;
+        const text = await res.text();
+        const ct = res.headers.get("content-type") ?? "";
+        if (ct.includes("text/html") || text.trimStart().startsWith("<")) {
+          throw new TransitError(t("error.network"));
+        }
+        let data: T;
+        try {
+          data = JSON.parse(text) as T;
+        } catch {
+          throw new TransitError(t("error.network"));
+        }
         if (useCache) cache.set(url, { at: Date.now(), data });
         return data;
       } catch (e) {

@@ -1,4 +1,5 @@
 import { API } from "../config";
+import { t } from "../i18n";
 import { RECOMMENDATIONS } from "../constants/recommendations";
 import { fetchJson } from "../lib/http";
 import { isBvgApi, isBvgStopId, isDbStopId } from "../lib/stop-ids";
@@ -135,7 +136,5 @@ export async function searchPlaces(query: string): Promise<Place[]> {
 export async function resolveLocation(text: string): Promise<Place> {
   const places = await searchPlaces(text);
   if (places.length) return places[0];
-  throw new Error(
-    `„${text}" nicht gefunden. Wähle einen Vorschlag aus der Liste.`
-  );
+  throw new Error(t("error.locationNotFound"));
 }

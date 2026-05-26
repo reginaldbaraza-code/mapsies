@@ -1,4 +1,7 @@
+import { getUpstreamPath } from "../lib/upstream-path.js";
+
 const UPSTREAM = "https://v6.db.transport.rest";
+const MOUNT = "/api/db";
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -13,11 +16,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const segments = req.query.path;
-  const path = Array.isArray(segments) ? segments.join("/") : segments || "";
-  const qsIndex = (req.url || "").indexOf("?");
-  const qs = qsIndex >= 0 ? req.url.slice(qsIndex) : "";
-  const target = `${UPSTREAM}/${path}${qs}`;
+  const path = getUpstreamPath(req, MOUNT);
+  const raw = req.url ?? "";
+  const qs = raw.includes("?") ? raw.slice(raw.indexOf("?")) : "";
+  const target = path ? `${UPSTREAM}/${path}${qs}` : `${UPSTREAM}${qs}`;
 
   try {
     const upstream = await fetch(target, {
