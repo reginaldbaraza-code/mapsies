@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    { "source": "/api/db/:path*", "destination": "/api/db/:path*" },
+    { "source": "/api/db-v5/:path*", "destination": "/api/db-v5/:path*" },
+    { "source": "/api/nominatim/:path*", "destination": "/api/nominatim/:path*" }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, OPTIONS" }
+      ]
+    }
+  ]
+}

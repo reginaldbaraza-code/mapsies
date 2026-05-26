@@ -1,0 +1,17 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /routes/{docId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll([
+        'origin', 'destination', 'durationSeconds', 'distanceMeters', 'timestamp'
+      ])
+        && request.resource.data.origin is string
+        && request.resource.data.destination is string
+        && request.resource.data.durationSeconds is number
+        && request.resource.data.distanceMeters is number;
+      allow update, delete: if false;
+    }
+  }
+}
