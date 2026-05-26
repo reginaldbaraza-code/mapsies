@@ -1,3 +1,10 @@
+node_modules/
+dist/
+src/**/*.js
+tests/**/*.js
+!**/*.ts
+test-results/
+playwright-report/
 .firebase/
 firebase-debug.log
 firestore-debug.log

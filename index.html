@@ -2,175 +2,125 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="FastRoute — fastest Deutschlandticket connections across Germany. No ICE, no IC.">
-  <title>FastRoute — Deutschlandticket</title>
-  <link rel="preconnect" href="https://unpkg.com">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="FastRoute — schnellste Deutschlandticket-Verbindung. Entscheidung in Sekunden.">
+  <title>FastRoute</title>
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="FastRoute — Deutschlandticket">
+  <meta property="og:description" content="Die schnellste D-Ticket Entscheidung. Ohne ICE.">
+  <meta name="theme-color" content="#05070a">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="apple-touch-icon" href="/icons/icon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="src/styles.css">
 </head>
 <body>
-  <div class="sidebar-backdrop hidden" id="sidebarBackdrop" aria-hidden="true"></div>
+  <div class="map-layer" id="mapLayer" aria-hidden="true">
+    <div id="map"></div>
+  </div>
 
-  <div class="app">
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <h2>Recent</h2>
-        <button type="button" class="icon-btn" id="sidebarToggle" aria-label="Close sidebar">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <ul class="recent-list" id="recentList">
-        <li class="recent-empty">No trips yet — search a route to get started.</li>
-      </ul>
-    </aside>
+  <div id="offlineBanner" class="system-strip system-strip--warn hidden" role="status">Offline</div>
+  <div id="morningBanner" class="system-strip hidden" role="region">
+    <span id="morningText"></span>
+    <button type="button" id="morningGoBtn" class="nav-ghost">→</button>
+  </div>
 
-    <div class="content">
-      <header class="topbar">
-        <button type="button" class="icon-btn mobile-only" id="openSidebarBtn" aria-label="Open recent trips">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-        </button>
-        <div class="brand">
-          <span class="brand-icon" aria-hidden="true">⚡</span>
-          <div>
-            <h1>FastRoute</h1>
-            <p class="tagline">Deutschlandticket · Germany-wide · no ICE/IC</p>
+  <div class="shell">
+    <div class="screen-host">
+      <!-- 1 · HOME -->
+      <section class="screen screen--home is-active" id="screenHome" aria-label="Route planen">
+        <header class="masthead">
+          <div class="masthead__row">
+            <span class="masthead__spine-mark" aria-hidden="true"></span>
+            <div>
+              <span class="masthead__mark">FastRoute</span>
+              <span class="masthead__tag">Deutschlandticket · Entscheidung in Sekunden</span>
+            </div>
           </div>
-        </div>
-        <span class="dticket-pill">🎫 D-Ticket</span>
-      </header>
+        </header>
 
-      <div class="layout">
-        <div class="panel panel-left">
-          <section class="card search-card">
-            <form id="routeForm" class="route-form" novalidate>
-              <div class="time-row">
-                <label class="time-label" for="departureInput">Depart</label>
-                <input type="datetime-local" id="departureInput" class="time-input">
-                <div class="time-chips" role="group" aria-label="Quick departure times">
-                  <button type="button" class="chip active" data-offset="0">Now</button>
-                  <button type="button" class="chip" data-offset="15">+15m</button>
-                  <button type="button" class="chip" data-offset="30">+30m</button>
-                  <button type="button" class="chip" data-offset="60">+1h</button>
-                </div>
-              </div>
-
-              <div class="route-inputs">
-                <div class="input-group">
-                  <label for="originInput">From</label>
-                  <div class="field-row">
-                    <div class="autocomplete-wrapper">
-                      <span class="field-icon" aria-hidden="true">A</span>
-                      <input type="text" id="originInput" placeholder="Station or address in Germany" autocomplete="off" required>
-                      <ul class="autocomplete-list" id="originSuggestions" role="listbox"></ul>
-                    </div>
-                    <button type="button" class="icon-btn" id="geoBtn" title="Use my location" aria-label="Use my location">
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
-                    </button>
-                  </div>
-                  <div class="recommendations" id="originRecommendations" hidden>
-                    <span class="rec-label">Suggestions</span>
-                    <div class="rec-chips" id="originRecChips"></div>
-                  </div>
-                </div>
-
-                <button type="button" class="swap-btn" id="swapBtn" aria-label="Swap origin and destination">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4M7 4L3 8M7 4l4 4M17 8v12M17 20l4-4M17 20l-4-4"/></svg>
-                </button>
-
-                <div class="input-group">
-                  <label for="destInput">To</label>
-                  <div class="autocomplete-wrapper">
-                    <span class="field-icon dest" aria-hidden="true">B</span>
-                    <input type="text" id="destInput" placeholder="Any city — München, Hamburg, Köln…" autocomplete="off" required>
-                    <ul class="autocomplete-list" id="destSuggestions" role="listbox"></ul>
-                  </div>
-                  <div class="recommendations" id="destRecommendations" hidden>
-                    <span class="rec-label">Suggestions</span>
-                    <div class="rec-chips" id="destRecChips"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="form-actions">
-                <button type="submit" class="btn btn-primary" id="findRouteBtn">
-                  <span class="btn-text">Find fastest connection</span>
-                  <span class="spinner hidden" id="formSpinner" aria-hidden="true"></span>
-                </button>
-                <button type="button" class="btn btn-ghost" id="newSearchBtn">New search</button>
-              </div>
-            </form>
-          </section>
-
-          <div class="error-panel hidden" id="errorPanel" role="alert">
-            <p id="errorText"></p>
-            <button type="button" class="btn btn-small" id="retryBtn">Try again</button>
+        <form id="routeForm" class="decision-form" novalidate>
+          <div class="route-stack">
+            <div class="route-field">
+              <label class="sr-only" for="originInput">Von</label>
+              <input type="text" id="originInput" class="route-input" placeholder="Von" autocomplete="off" required>
+              <ul id="originSuggestions" class="suggest-list" hidden role="listbox"></ul>
+              <div id="originChips" class="station-chips" hidden></div>
+            </div>
+            <div class="route-field">
+              <label class="sr-only" for="destInput">Nach</label>
+              <input type="text" id="destInput" class="route-input" placeholder="Nach" autocomplete="off" required>
+              <ul id="destSuggestions" class="suggest-list" hidden role="listbox"></ul>
+              <div id="destChips" class="station-chips" hidden></div>
+            </div>
+            <button type="button" class="route-swap" id="swapBtn" aria-label="Tauschen">⇅</button>
           </div>
 
-          <section class="card hidden" id="alternativesCard">
-            <h3 class="card-title">Other connections</h3>
-            <div class="alt-list" id="alternativesList"></div>
-          </section>
+          <div class="home-quick">
+            <button type="button" class="quick-btn" id="geoBtn">📍 Standort</button>
+            <button type="button" class="quick-btn" id="homeBtn">Home</button>
+            <button type="button" class="quick-btn" id="workBtn">Work</button>
+          </div>
 
-          <section class="card hidden" id="summaryCard">
-            <div class="summary-head">
-              <h3 class="card-title">Fastest connection</h3>
-              <button type="button" class="btn btn-small btn-ghost" id="shareBtn">Copy trip</button>
-            </div>
-            <div class="summary-grid">
-              <div class="summary-item">
-                <span class="summary-label">Duration</span>
-                <span class="summary-value" id="summaryDuration">—</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">Depart</span>
-                <span class="summary-value" id="summaryDepart">—</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">Arrive</span>
-                <span class="summary-value" id="summaryArrive">—</span>
-              </div>
-              <div class="summary-item">
-                <span class="summary-label">Transfers</span>
-                <span class="summary-value" id="summaryTransfers">—</span>
-              </div>
-            </div>
-          </section>
+          <input type="datetime-local" id="departureInput" class="sr-only" aria-hidden="true">
 
-          <section class="card hidden" id="directionsCard">
-            <button type="button" class="directions-toggle" id="directionsToggle" aria-expanded="true">
-              <h3 class="card-title">Step-by-step</h3>
-              <svg class="chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-            </button>
-            <ol class="timeline" id="directionsList"></ol>
-          </section>
+          <div class="home-rail" id="homeRail">
+            <span class="home-rail__label">Zuletzt</span>
+            <ul class="recent-rail" id="recentList"></ul>
+          </div>
+
+          <button type="submit" class="cta-primary" id="findRouteBtn">
+            <span>Schnellste Verbindung</span>
+            <span class="cta-spinner hidden" id="formSpinner" aria-hidden="true"></span>
+          </button>
+        </form>
+
+        <div id="homeError" class="inline-error hidden" role="alert"></div>
+      </section>
+
+      <!-- 2 · RESULTS (decision engine) -->
+      <section class="screen screen--results" id="screenResults" hidden aria-label="Entscheidung">
+        <header class="results-nav">
+          <button type="button" class="nav-back" id="backHomeBtn" aria-label="Zurück">←</button>
+          <div class="results-route" id="resultsRouteLabel"></div>
+          <button type="button" class="nav-ghost" id="shareLinkBtn">Teilen</button>
+        </header>
+
+        <div class="decision-primary" id="decisionPrimary">
+          <div id="routeDecisionCore" role="article" aria-live="polite"></div>
         </div>
 
-        <div class="panel panel-right">
-          <section class="card map-card">
-            <div class="map-toolbar">
-              <span class="badge fastest-badge hidden" id="fastestBadge">🎫 Deutschlandticket</span>
-            </div>
-            <div class="map-wrap">
-              <div class="loading-overlay hidden" id="mapLoading">
-                <span class="spinner spinner-lg"></span>
-                <p>Searching connections…</p>
-              </div>
-              <div id="map" role="application" aria-label="Route map"></div>
-            </div>
-          </section>
+        <div class="decision-secondary decision-secondary--pending" id="decisionSecondary">
+          <div id="disruptionStrip" class="disruption-strip hidden"></div>
+          <div id="altRoutes"></div>
+          <button type="button" class="detail-cta--secondary" id="openDetailBtn">Schritte &amp; Gleise</button>
+          <button type="button" class="map-reveal" id="mapExpandBtn">Karte anzeigen</button>
         </div>
-      </div>
+      </section>
 
-      <footer class="footer">
-        <p>Data: DB / HAFAS via <a href="https://transport.rest" target="_blank" rel="noopener">transport.rest</a> · Map © OpenStreetMap · Not affiliated with Deutsche Bahn.</p>
-      </footer>
+      <!-- 3 · DETAIL -->
+      <section class="screen screen--detail" id="screenDetail" hidden aria-label="Fahrtverlauf">
+        <header class="detail-nav">
+          <button type="button" class="nav-back" id="backResultsBtn" aria-label="Zurück">←</button>
+          <span style="font: var(--type-title)">Fahrtverlauf</span>
+        </header>
+        <div id="transferTimeline"></div>
+        <footer class="detail-footer">
+          <button type="button" id="shareBtn">Kopieren</button>
+          <button type="button" id="returnBtn">Rückfahrt</button>
+        </footer>
+      </section>
     </div>
   </div>
 
-  <div class="toast hidden" id="toast" role="status"></div>
+  <div id="loadingSheet" class="loading-sheet" aria-live="polite">
+    <p id="loadingText">Suche schnellste Verbindung…</p>
+  </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <script type="module" src="src/app.js"></script>
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script type="module" src="/src/main.ts"></script>
 </body>
 </html>
