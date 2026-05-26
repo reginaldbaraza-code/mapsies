@@ -1,4 +1,11 @@
 import { DEBOUNCE_MS } from "./config";
+import {
+  applyStaticI18n,
+  getLocale,
+  onLocaleChange,
+  setLocale,
+  t,
+} from "./i18n";
 import { filterRecommendations } from "./services/places";
 import { searchPlaces, resolveLocation } from "./services/places";
 import { fetchFastestJourneys } from "./services/journey";
@@ -88,6 +95,8 @@ const els = {
   morningText: $("morningText"),
   morningGoBtn: $("morningGoBtn"),
   offlineBanner: $("offlineBanner"),
+  langDeBtn: $<HTMLButtonElement>("langDeBtn"),
+  langEnBtn: $<HTMLButtonElement>("langEnBtn"),
 };
 
 let routeMap: RouteMap | null = null;
@@ -121,7 +130,7 @@ function setLoading(on: boolean) {
   els.formSpinner.classList.toggle("hidden", !on);
   els.findRouteBtn.disabled = on;
   els.loadingSheet.classList.toggle("is-open", on);
-  els.loadingText.textContent = on ? "Suche schnellste Verbindung…" : "";
+  els.loadingText.textContent = on ? t("loading.searching") : "";
 }
 
 function initDeparture() {
@@ -159,8 +168,8 @@ function buildChipSuggestions(key: "origin" | "destination", query: string) {
   if (key === "origin" && !query) {
     const home = loadShortcut(HOME_KEY_EXPORT);
     const work = loadShortcut(WORK_KEY_EXPORT);
-    if (work) recs.unshift({ label: "Work", place: work, accent: true });
-    if (home) recs.unshift({ label: "Home", place: home, accent: true });
+    if (work) recs.unshift({ label: t("common.work"), place: work, accent: true });
+    if (home) recs.unshift({ label: t("common.home"), place: home, accent: true });
   }
   return recs;
 }
@@ -300,16 +309,16 @@ export async function findRoute() {
     let dest = state.destination;
 
     if (!origin) {
-      const t = els.originInput.value.trim();
-      if (!t) throw new Error("Start eingeben oder aus Liste wählen.");
-      origin = await resolveLocation(t);
+      const text = els.originInput.value.trim();
+      if (!text) throw new Error(t("error.originRequired"));
+      origin = await resolveLocation(text);
       els.originInput.value = origin.label;
       state.origin = origin;
     }
     if (!dest) {
-      const t = els.destInput.value.trim();
-      if (!t) throw new Error("Ziel eingeben oder aus Liste wählen.");
-      dest = await resolveLocation(t);
+      const text = els.destInput.value.trim();
+      if (!text) throw new Error(t("error.destRequired"));
+      dest = await resolveLocation(text);
       els.destInput.value = dest.label;
       state.destination = dest;
     }
@@ -338,7 +347,7 @@ export async function findRoute() {
     trackRouteSearch(performance.now() - t0, true, countTransfers(state.journeys[0].legs));
     hapticSuccess();
   } catch (err) {
-    const msg = err instanceof Error ? err.message : "Unbekannter Fehler.";
+    const msg = err instanceof Error ? err.message : t("error.unknown");
     if (getScreen() === "results") navigate("home");
     showHomeError(msg);
     captureError(err, { phase: "route_search" });
@@ -390,7 +399,35 @@ function resetToHome() {
   hideHomeError();
 }
 
+function syncLangButtons() {
+  const locale = getLocale();
+  els.langDeBtn.classList.toggle("is-active", locale === "de");
+  els.langEnBtn.classList.toggle("is-active", locale === "en");
+  els.langDeBtn.setAttribute("aria-pressed", String(locale === "de"));
+  els.langEnBtn.setAttribute("aria-pressed", String(locale === "en"));
+}
+
+function onLocaleUpdated() {
+  applyStaticI18n();
+  syncLangButtons();
+  setupMorning();
+  renderRecent();
+  const screen = getScreen();
+  if (screen === "results" && state.journeys.length) {
+    renderResultsScreen(false);
+  } else if (screen === "detail" && state.journeys.length) {
+    renderDetailScreen();
+  }
+}
+
 export function initApp(): void {
+  applyStaticI18n();
+  syncLangButtons();
+
+  els.langDeBtn.addEventListener("click", () => setLocale("de"));
+  els.langEnBtn.addEventListener("click", () => setLocale("en"));
+  onLocaleChange(onLocaleUpdated);
+
   initRouter(
     { home: "screenHome", results: "screenResults", detail: "screenDetail" },
     "mapLayer"
@@ -414,8 +451,8 @@ export function initApp(): void {
   });
 
   els.geoBtn.addEventListener("click", () => void useGeo());
-  els.homeBtn.addEventListener("click", () => applyQuick(HOME_KEY_EXPORT, "Home"));
-  els.workBtn.addEventListener("click", () => applyQuick(WORK_KEY_EXPORT, "Work"));
+  els.homeBtn.addEventListener("click", () => applyQuick(HOME_KEY_EXPORT, t("common.home")));
+  els.workBtn.addEventListener("click", () => applyQuick(WORK_KEY_EXPORT, t("common.work")));
 
   els.backHomeBtn.addEventListener("click", resetToHome);
   els.backResultsBtn.addEventListener("click", () => navigate("results"));
@@ -426,7 +463,7 @@ export function initApp(): void {
     mapExpanded = !mapExpanded;
     if (mapExpanded) {
       els.mapLayer.classList.add("is-expanded");
-      els.mapExpandBtn.textContent = "Karte ausblenden";
+      els.mapExpandBtn.textContent = t("results.mapHide");
       void ensureMap().then((m) => {
         const j = state.journeys[state.selectedIndex];
         if (j && state.origin && state.destination) {
@@ -436,14 +473,14 @@ export function initApp(): void {
       });
     } else {
       els.mapLayer.classList.remove("is-expanded");
-      els.mapExpandBtn.textContent = "Karte anzeigen";
+      els.mapExpandBtn.textContent = t("results.mapShow");
     }
   });
 
   els.shareLinkBtn.addEventListener("click", () => {
     if (!state.origin || !state.destination) return;
     const url = buildShareUrl(state.origin, state.destination, getDepartureIso());
-    void navigator.clipboard.writeText(url).then(() => showToast("Link kopiert"));
+    void navigator.clipboard.writeText(url).then(() => showToast(t("toast.linkCopied")));
   });
 
   els.shareBtn.addEventListener("click", () => {
@@ -451,13 +488,13 @@ export function initApp(): void {
     if (!j || !state.origin || !state.destination) return;
     const ins = analyzeJourneyInsights(j, state.walkPace);
     const text = [
-      "FastRoute",
+      t("share.header"),
       `${state.origin.label} → ${state.destination.label}`,
       formatDuration(journeyDurationSeconds(j)),
-      `Zuverlässigkeit ${ins.reliabilityScore}%`,
+      t("share.reliabilityScore", { score: ins.reliabilityScore }),
       j.legs.map((leg, i) => `${i + 1}. ${formatLeg(leg)} ${formatTime(leg.departure)}`).join("\n"),
     ].join("\n");
-    void navigator.clipboard.writeText(text).then(() => showToast("Kopiert"));
+    void navigator.clipboard.writeText(text).then(() => showToast(t("toast.copied")));
   });
 
   els.returnBtn.addEventListener("click", () => {
@@ -480,8 +517,8 @@ function applyQuick(key: typeof HOME_KEY_EXPORT | typeof WORK_KEY_EXPORT, label:
   if (!place) {
     if (state.origin) {
       saveShortcut(key, state.origin);
-      showToast(`${label} gespeichert`);
-    } else showToast(`Route suchen, dann ${label} lang speichern`);
+      showToast(t("toast.savedLabel", { label }));
+    } else showToast(t("toast.saveRouteHint", { label }));
     return;
   }
   els.originInput.value = place.label;
@@ -490,7 +527,7 @@ function applyQuick(key: typeof HOME_KEY_EXPORT | typeof WORK_KEY_EXPORT, label:
 }
 
 async function useGeo() {
-  if (!navigator.geolocation) return showHomeError("Standort nicht verfügbar.");
+  if (!navigator.geolocation) return showHomeError(t("error.locationUnavailable"));
   try {
     const pos = await new Promise<GeolocationPosition>((res, rej) =>
       navigator.geolocation.getCurrentPosition(res, rej, { timeout: 10000 })
@@ -499,7 +536,7 @@ async function useGeo() {
     const place = places[0] ?? {
       lat: pos.coords.latitude,
       lon: pos.coords.longitude,
-      label: "Mein Standort",
+      label: t("suggest.myLocation"),
       type: "address" as const,
     };
     els.originInput.value = place.label;
@@ -507,6 +544,6 @@ async function useGeo() {
     els.destInput.focus();
     hapticSuccess();
   } catch {
-    showHomeError("Standort fehlgeschlagen.");
+    showHomeError(t("error.locationFailed"));
   }
 }

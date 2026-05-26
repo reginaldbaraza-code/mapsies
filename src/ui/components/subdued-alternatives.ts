@@ -1,4 +1,5 @@
 import { formatDuration, formatTime, journeyDurationSeconds } from "../../lib/format";
+import { t } from "../../i18n";
 import { analyzeJourneyInsights } from "../../services/commute";
 import { renderRouteSpine } from "./route-spine";
 import type { Journey, WalkPace } from "../../types";
@@ -26,7 +27,7 @@ export function renderSubduedAlternatives(
   container.classList.remove("hidden");
   const label = document.createElement("p");
   label.className = "alt-subdued__label";
-  label.textContent = "Falls nicht passend";
+  label.textContent = t("results.altsLabel");
   container.appendChild(label);
 
   alts.forEach(({ j, i }) => {

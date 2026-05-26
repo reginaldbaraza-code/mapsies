@@ -21,7 +21,7 @@
     <div id="map"></div>
   </div>
 
-  <div id="offlineBanner" class="system-strip system-strip--warn hidden" role="status">Offline</div>
+  <div id="offlineBanner" class="system-strip system-strip--warn hidden" role="status" data-i18n="common.offline">Offline</div>
   <div id="morningBanner" class="system-strip hidden" role="region">
     <span id="morningText"></span>
     <button type="button" id="morningGoBtn" class="nav-ghost">→</button>
@@ -30,13 +30,18 @@
   <div class="shell">
     <div class="screen-host">
       <!-- 1 · HOME -->
-      <section class="screen screen--home is-active" id="screenHome" aria-label="Route planen">
+      <section class="screen screen--home is-active" id="screenHome" data-i18n-aria="home.screenAria" aria-label="Route planen">
         <header class="masthead">
           <div class="masthead__row">
             <span class="masthead__spine-mark" aria-hidden="true"></span>
             <div>
               <span class="masthead__mark">FastRoute</span>
-              <span class="masthead__tag">Deutschlandticket · Entscheidung in Sekunden</span>
+              <span class="masthead__tag" data-i18n="home.tagline">Deutschlandticket · Entscheidung in Sekunden</span>
+            </div>
+            <div class="lang-switch" role="group" aria-labelledby="langSwitchLabel">
+              <span id="langSwitchLabel" class="sr-only" data-i18n="lang.switch">Sprache</span>
+              <button type="button" class="lang-switch__btn is-active" id="langDeBtn" data-locale="de" aria-pressed="true">DE</button>
+              <button type="button" class="lang-switch__btn" id="langEnBtn" data-locale="en" aria-pressed="false">EN</button>
             </div>
           </div>
         </header>
@@ -44,35 +49,35 @@
         <form id="routeForm" class="decision-form" novalidate>
           <div class="route-stack">
             <div class="route-field">
-              <label class="sr-only" for="originInput">Von</label>
-              <input type="text" id="originInput" class="route-input" placeholder="Von" autocomplete="off" required>
+              <label class="sr-only" for="originInput" data-i18n="home.from">Von</label>
+              <input type="text" id="originInput" class="route-input" data-i18n-placeholder="home.from" placeholder="Von" autocomplete="off" required>
               <ul id="originSuggestions" class="suggest-list" hidden role="listbox"></ul>
               <div id="originChips" class="station-chips" hidden></div>
             </div>
             <div class="route-field">
-              <label class="sr-only" for="destInput">Nach</label>
-              <input type="text" id="destInput" class="route-input" placeholder="Nach" autocomplete="off" required>
+              <label class="sr-only" for="destInput" data-i18n="home.to">Nach</label>
+              <input type="text" id="destInput" class="route-input" data-i18n-placeholder="home.to" placeholder="Nach" autocomplete="off" required>
               <ul id="destSuggestions" class="suggest-list" hidden role="listbox"></ul>
               <div id="destChips" class="station-chips" hidden></div>
             </div>
-            <button type="button" class="route-swap" id="swapBtn" aria-label="Tauschen">⇅</button>
+            <button type="button" class="route-swap" id="swapBtn" data-i18n-aria="home.swapAria" aria-label="Tauschen">⇅</button>
           </div>
 
           <div class="home-quick">
-            <button type="button" class="quick-btn" id="geoBtn">📍 Standort</button>
-            <button type="button" class="quick-btn" id="homeBtn">Home</button>
-            <button type="button" class="quick-btn" id="workBtn">Work</button>
+            <button type="button" class="quick-btn" id="geoBtn">📍 <span data-i18n="home.location">Standort</span></button>
+            <button type="button" class="quick-btn" id="homeBtn" data-i18n="common.home">Home</button>
+            <button type="button" class="quick-btn" id="workBtn" data-i18n="common.work">Work</button>
           </div>
 
           <input type="datetime-local" id="departureInput" class="sr-only" aria-hidden="true">
 
           <div class="home-rail" id="homeRail">
-            <span class="home-rail__label">Zuletzt</span>
+            <span class="home-rail__label" data-i18n="home.recent">Zuletzt</span>
             <ul class="recent-rail" id="recentList"></ul>
           </div>
 
           <button type="submit" class="cta-primary" id="findRouteBtn">
-            <span>Schnellste Verbindung</span>
+            <span data-i18n="home.cta">Schnellste Verbindung</span>
             <span class="cta-spinner hidden" id="formSpinner" aria-hidden="true"></span>
           </button>
         </form>
@@ -81,11 +86,11 @@
       </section>
 
       <!-- 2 · RESULTS (decision engine) -->
-      <section class="screen screen--results" id="screenResults" hidden aria-label="Entscheidung">
+      <section class="screen screen--results" id="screenResults" hidden data-i18n-aria="results.screenAria" aria-label="Entscheidung">
         <header class="results-nav">
-          <button type="button" class="nav-back" id="backHomeBtn" aria-label="Zurück">←</button>
+          <button type="button" class="nav-back" id="backHomeBtn" data-i18n-aria="results.backAria" aria-label="Zurück">←</button>
           <div class="results-route" id="resultsRouteLabel"></div>
-          <button type="button" class="nav-ghost" id="shareLinkBtn">Teilen</button>
+          <button type="button" class="nav-ghost" id="shareLinkBtn" data-i18n="results.share">Teilen</button>
         </header>
 
         <div class="decision-primary" id="decisionPrimary">
@@ -95,28 +100,28 @@
         <div class="decision-secondary decision-secondary--pending" id="decisionSecondary">
           <div id="disruptionStrip" class="disruption-strip hidden"></div>
           <div id="altRoutes"></div>
-          <button type="button" class="detail-cta--secondary" id="openDetailBtn">Schritte &amp; Gleise</button>
-          <button type="button" class="map-reveal" id="mapExpandBtn">Karte anzeigen</button>
+          <button type="button" class="detail-cta--secondary" id="openDetailBtn" data-i18n="results.steps">Schritte &amp; Gleise</button>
+          <button type="button" class="map-reveal" id="mapExpandBtn" data-i18n="results.mapShow">Karte anzeigen</button>
         </div>
       </section>
 
       <!-- 3 · DETAIL -->
-      <section class="screen screen--detail" id="screenDetail" hidden aria-label="Fahrtverlauf">
+      <section class="screen screen--detail" id="screenDetail" hidden data-i18n-aria="detail.screenAria" aria-label="Fahrtverlauf">
         <header class="detail-nav">
-          <button type="button" class="nav-back" id="backResultsBtn" aria-label="Zurück">←</button>
-          <span style="font: var(--type-title)">Fahrtverlauf</span>
+          <button type="button" class="nav-back" id="backResultsBtn" data-i18n-aria="results.backAria" aria-label="Zurück">←</button>
+          <span id="detailTitle" style="font: var(--type-title)" data-i18n="detail.title">Fahrtverlauf</span>
         </header>
         <div id="transferTimeline"></div>
         <footer class="detail-footer">
-          <button type="button" id="shareBtn">Kopieren</button>
-          <button type="button" id="returnBtn">Rückfahrt</button>
+          <button type="button" id="shareBtn" data-i18n="detail.copy">Kopieren</button>
+          <button type="button" id="returnBtn" data-i18n="detail.return">Rückfahrt</button>
         </footer>
       </section>
     </div>
   </div>
 
   <div id="loadingSheet" class="loading-sheet" aria-live="polite">
-    <p id="loadingText">Suche schnellste Verbindung…</p>
+    <p id="loadingText" data-i18n="loading.searching">Suche schnellste Verbindung…</p>
   </div>
 
   <div id="toast" class="toast hidden" role="status"></div>

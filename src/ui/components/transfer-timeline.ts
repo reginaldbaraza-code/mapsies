@@ -1,4 +1,5 @@
 import { formatTime, escapeHtml } from "../../lib/format";
+import { t } from "../../i18n";
 import { analyzeTransfers } from "../../services/commute";
 import { renderRouteSpine } from "./route-spine";
 import type { Journey, JourneyLeg, WalkPace } from "../../types";
@@ -8,9 +9,9 @@ function isWalk(leg: JourneyLeg): boolean {
 }
 
 function verbForLeg(leg: JourneyLeg): string {
-  if (isWalk(leg)) return `Geh nach ${leg.destination.name}`;
-  const name = leg.line?.name ?? "Zug";
-  return `${name} nehmen`;
+  if (isWalk(leg)) return t("leg.walkTo", { name: leg.destination.name });
+  const name = leg.line?.name ?? t("common.train");
+  return t("leg.take", { name });
 }
 
 /** TransferTimeline — spine-guided step flow */
@@ -42,17 +43,17 @@ export function renderTransferTimeline(
       <h3 class="timeline-step__verb">${escapeHtml(verbForLeg(leg))}</h3>
       <p class="timeline-step__meta">
         ${escapeHtml(leg.destination.name)}
-        ${platform ? ` · Gleis ${escapeHtml(platform)}` : ""}
-        ${delay > 0 ? ` · +${Math.round(delay / 60)} Min.` : ""}
+        ${platform ? ` · ${t("common.platform")} ${escapeHtml(platform)}` : ""}
+        ${delay > 0 ? ` · +${Math.round(delay / 60)} ${t("common.min")}` : ""}
       </p>`;
     steps.appendChild(block);
 
     if (i < journey.legs.length - 1 && transfers[transferIdx]) {
-      const t = transfers[transferIdx];
-      const tr = document.createElement("div");
-      tr.className = `timeline-transfer${t.risk !== "ok" ? ` timeline-transfer--${t.risk}` : ""}`;
-      tr.textContent = t.message;
-      steps.appendChild(tr);
+      const tr = transfers[transferIdx];
+      const trEl = document.createElement("div");
+      trEl.className = `timeline-transfer${tr.risk !== "ok" ? ` timeline-transfer--${tr.risk}` : ""}`;
+      trEl.textContent = tr.message;
+      steps.appendChild(trEl);
       transferIdx++;
     }
   });

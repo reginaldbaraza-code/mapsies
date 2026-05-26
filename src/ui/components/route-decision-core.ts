@@ -3,6 +3,7 @@ import {
   formatTime,
   journeyDurationSeconds,
 } from "../../lib/format";
+import { t } from "../../i18n";
 import { buildDecisionPresentation } from "../decision-state";
 import { renderRouteSpine, renderSpineSkeleton } from "./route-spine";
 import { renderDepartureTimer } from "./departure-timer";
@@ -16,7 +17,7 @@ export function renderDecisionSkeleton(container: HTMLElement): void {
       <div class="route-decision-core__body">
         <div class="departure-timer departure-timer--skeleton" aria-hidden="true"></div>
         <div class="route-decision-core__skeleton-line" aria-hidden="true"></div>
-        <p class="route-decision-core__loading-copy">Entscheidung…</p>
+        <p class="route-decision-core__loading-copy">${t("loading.decision")}</p>
       </div>
     </div>`;
 }
@@ -51,7 +52,7 @@ export function renderRouteDecisionCore(
           <span class="route-decision-core__prob-value time-dominant time-dominant--prob">${d.successProbability}%</span>
           <span class="route-decision-core__prob-label">${escapeHtml(d.probabilityLabel)}</span>
         </div>
-        <button type="button" class="route-decision-core__detail">Fahrtverlauf öffnen</button>
+        <button type="button" class="route-decision-core__detail">${escapeHtml(t("decision.openDetail"))}</button>
       </div>
     </div>`;
 

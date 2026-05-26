@@ -1,5 +1,6 @@
 import { minutesUntilFirstTransit } from "../decision-state";
 import { formatTime } from "../../lib/format";
+import { t } from "../../i18n";
 import type { Journey } from "../../types";
 
 /** PRIMARY urgency — time-dominant, verb-first */
@@ -20,13 +21,13 @@ export function renderDepartureTimer(container: HTMLElement, journey: Journey): 
 
   if (mins < 0) {
     container.classList.add("departure-timer--late");
-    container.innerHTML = `<span class="time-dominant time-dominant--sm">Verpasst</span>`;
+    container.innerHTML = `<span class="time-dominant time-dominant--sm">${t("departure.missed")}</span>`;
     return;
   }
 
   if (mins <= 10) {
     container.classList.add("departure-timer--urgent");
-    const verb = mins <= 3 ? "Jetzt los" : `In ${mins} Min. los`;
+    const verb = mins <= 3 ? t("departure.leaveNow") : t("departure.leaveIn", { mins });
     container.innerHTML = `
       <span class="time-dominant">${verb}</span>
       <span class="departure-timer__meta">${line ? `${line} · ` : ""}${time}</span>`;
@@ -35,5 +36,5 @@ export function renderDepartureTimer(container: HTMLElement, journey: Journey): 
 
   container.innerHTML = `
     <span class="time-dominant time-dominant--md">${time}</span>
-    <span class="departure-timer__meta">Abfahrt · ${mins} Min.</span>`;
+    <span class="departure-timer__meta">${t("departure.departIn", { mins })}</span>`;
 }

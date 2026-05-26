@@ -4,6 +4,7 @@ import {
   journeyDurationSeconds,
   countTransfers,
 } from "../../lib/format";
+import { t } from "../../i18n";
 import { analyzeJourneyInsights, reliabilityLabel } from "../../services/commute";
 import type { Journey, WalkPace } from "../../types";
 
@@ -26,7 +27,7 @@ export function renderRouteHero(
       <span>${formatTime(legs[legs.length - 1].arrival)}</span>
     </div>
     <div class="route-hero__meta">
-      <span>${transfers === 0 ? "Direkt" : `${transfers} Umstieg${transfers > 1 ? "e" : ""}`} · D-Ticket</span>
+      <span>${transfers === 0 ? t("common.direct") : `${transfers} ${transfers > 1 ? t("common.transfers") : t("common.transfer")}`} · ${t("common.dticket")}</span>
       <span class="route-hero__reliability">${ins.reliabilityScore}% · ${reliabilityLabel(ins.reliabilityScore)}</span>
     </div>`;
 

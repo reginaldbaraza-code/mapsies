@@ -113,6 +113,30 @@ body {
   margin-top: var(--s1);
 }
 
+.lang-switch {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.lang-switch__btn {
+  font: var(--type-caption);
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle, rgba(255, 255, 255, 0.12));
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.lang-switch__btn.is-active {
+  color: var(--text-primary);
+  border-color: var(--accent, #3b82f6);
+  background: rgba(59, 130, 246, 0.12);
+}
+
 /* Route inputs */
 .decision-form {
   display: flex;

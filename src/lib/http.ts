@@ -1,4 +1,5 @@
 import { CACHE_TTL_MS } from "../config";
+import { t } from "../i18n";
 
 const cache = new Map<string, { at: number; data: unknown }>();
 const inflight = new Map<string, Promise<unknown>>();
@@ -56,14 +57,12 @@ export async function fetchJson<T>(url: string, opts?: { cache?: boolean; retrie
         lastErr = e instanceof Error ? e : new Error(String(e));
         if (e instanceof TransitError && (e.code === "503" || e.code === "LOCATION")) throw e;
         if (e instanceof TypeError && e.message === "Failed to fetch") {
-          throw new TransitError(
-            "Netzwerkfehler. Bitte Verbindung prüfen oder später erneut versuchen."
-          );
+          throw new TransitError(t("error.network"));
         }
         if (i < retries) await new Promise((r) => setTimeout(r, 400 * (i + 1)));
       }
     }
-    throw lastErr ?? new TransitError("Unbekannter Fehler");
+    throw lastErr ?? new TransitError(t("error.unknown"));
   })().finally(() => inflight.delete(url));
 
   inflight.set(url, promise);
